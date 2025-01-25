@@ -1,0 +1,304 @@
+substitutions:
+  device: modbusgw1
+  name: Modbus Gateway
+
+esphome:
+  name: $device
+  friendly_name: $name
+
+esp32:
+  board: esp32-s3-devkitc-1
+  flash_size: 16MB
+  variant: esp32s3
+  framework:
+    type: esp-idf
+#    version: "5.4.0"
+#    platform_version: 6.6.0
+#    sdkconfig_options:
+#      CONFIG_OPENTHREAD_ENABLED: n
+#      CONFIG_ENABLE_WIFI_STATION: y
+#      CONFIG_USE_MINIMAL_MDNS: y
+#      CONFIG_ESPTOOLPY_FLASHSIZE_8MB: y
+#      CONFIG_ESP32_S3_BOX_BOARD: "y"
+
+#psram:
+#  mode: octal
+#  speed: 80MHz
+
+# Enable logging
+logger:
+  level: WARN
+
+# Enable Home Assistant API
+api:
+  # password: !secret ha_pass
+
+# Enable OTA
+ota:
+  - platform: esphome
+    password: !secret ota_pass
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  domain: .lan
+#  power_save_mode: none
+  use_address: 192.168.10.51
+
+  # Disable rebooting due to losing connection with Home Assistant.
+  reboot_timeout: 0s  
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: !secret ap_ssid
+    password: !secret ap_pass
+
+captive_portal:
+
+status_led:
+  pin:
+    number: GPIO15
+    inverted: false
+
+uart:
+  - id: uart_hub1
+    baud_rate: 9600
+    data_bits: 8
+    parity: NONE
+    stop_bits: 1
+    rx_pin: GPIO18
+    tx_pin: GPIO16
+    #rx_buffer_size: 20
+  - id: uart_hub2
+    baud_rate: 9600
+    data_bits: 8
+    parity: NONE
+    stop_bits: 1
+    rx_pin: GPIO20
+    tx_pin: GPIO8
+    #rx_buffer_size: 20
+
+modbus:
+  - id: hub1
+    uart_id: uart_hub1
+    flow_control_pin:
+      number: GPIO17
+      inverted: False
+    send_wait_time: 20ms
+  - id: hub2
+    uart_id: uart_hub2
+    flow_control_pin:
+      number: GPIO19
+      inverted: False
+    send_wait_time: 20ms
+
+modbus_controller:
+  - id: sw100
+    address: 100
+    modbus_id: hub1
+    setup_priority: -10
+    command_throttle: 10ms
+  - id: sw101
+    address: 101
+    modbus_id: hub1
+    setup_priority: -10
+    command_throttle: 10ms
+  - id: sw102
+    address: 102
+    modbus_id: hub1
+    setup_priority: -10
+    command_throttle: 10ms
+  - id: sw103
+    address: 103
+    modbus_id: hub1
+    setup_priority: -10
+    command_throttle: 10ms
+
+switch:
+
+  - platform: restart
+    name: "${name} Restart"
+
+  # elso gepeszet modul #101
+  - platform: modbus_controller
+    modbus_controller_id: sw101
+    name: "szoba2_jobb"
+    register_type: coil
+    address: 7
+  - platform: modbus_controller
+    modbus_controller_id: sw101
+    name: "szoba2_bal"
+    register_type: coil
+    address: 6
+  - platform: modbus_controller
+    modbus_controller_id: sw101
+    name: "szoba1_bal"
+    register_type: coil
+    address: 5
+  - platform: modbus_controller
+    modbus_controller_id: sw101
+    name: "szoba1_jobb"
+    register_type: coil
+    address: 4
+  - platform: modbus_controller
+    modbus_controller_id: sw101
+    name: "eloszoba"
+    register_type: coil
+    address: 3
+  - platform: modbus_controller
+    modbus_controller_id: sw101
+    name: "furdo1"
+    register_type: coil
+    address: 2
+  - platform: modbus_controller
+    modbus_controller_id: sw101
+    name: "furdo1_pult"
+    register_type: coil
+    address: 1
+  - platform: modbus_controller
+    modbus_controller_id: sw101
+    name: "wc"
+    register_type: coil
+    address: 0
+
+  # elso gepeszet modul #103
+  - platform: modbus_controller
+    modbus_controller_id: sw103
+    name: "sw_103_7"
+    register_type: coil
+    address: 7
+  - platform: modbus_controller
+    modbus_controller_id: sw103
+    name: "autobeallo"
+    register_type: coil
+    address: 6
+  - platform: modbus_controller
+    modbus_controller_id: sw103
+    name: "padlas"
+    register_type: coil
+    address: 5
+  - platform: modbus_controller
+    modbus_controller_id: sw103
+    name: "kiskapu"
+    register_type: coil
+    address: 4
+  - platform: modbus_controller
+    modbus_controller_id: sw103
+    name: "terasz_bejarat"
+    register_type: coil
+    address: 3
+  - platform: modbus_controller
+    modbus_controller_id: sw103
+    name: "terasz_jobb"
+    register_type: coil
+    address: 2
+  - platform: modbus_controller
+    modbus_controller_id: sw103
+    name: "tarolo"
+    register_type: coil
+    address: 1
+  - platform: modbus_controller
+    modbus_controller_id: sw103
+    name: "kozlekedo1"
+    register_type: coil
+    address: 0
+
+  # hatso kozlekedo modul #100
+  - platform: modbus_controller
+    modbus_controller_id: sw100
+    name: "nappali_jobb"
+    register_type: coil
+    address: 0
+  - platform: modbus_controller
+    modbus_controller_id: sw100
+    name: "etkezo"
+    register_type: coil
+    address: 1
+  - platform: modbus_controller
+    modbus_controller_id: sw100
+    name: "konyha"
+    register_type: coil
+    address: 2
+  - platform: modbus_controller
+    modbus_controller_id: sw100
+    name: "nappali_kozep"
+    register_type: coil
+    address: 3
+  - platform: modbus_controller
+    modbus_controller_id: sw100
+    name: "hatso_terasz_bal"
+    register_type: coil
+    address: 4
+  - platform: modbus_controller
+    modbus_controller_id: sw100
+    name: "konyha_pult"
+    register_type: coil
+    address: 5
+  - platform: modbus_controller
+    modbus_controller_id: sw100
+    name: "hatso_terasz_jobb"
+    register_type: coil
+    address: 6
+  - platform: modbus_controller
+    modbus_controller_id: sw100
+    name: "dolgozo_bal"
+    register_type: coil
+    address: 7
+
+  # hatso kozlekedo modul #102
+  - platform: modbus_controller
+    modbus_controller_id: sw102
+    name: "dolgozo_jobb"
+    register_type: coil
+    address: 0
+  - platform: modbus_controller
+    modbus_controller_id: sw102
+    name: "kozlekedo3"
+    register_type: coil
+    address: 1
+  - platform: modbus_controller
+    modbus_controller_id: sw102
+    name: "furdo2"
+    register_type: coil
+    address: 2
+  - platform: modbus_controller
+    modbus_controller_id: sw102
+    name: "halo_bal"
+    register_type: coil
+    address: 3
+  - platform: modbus_controller
+    modbus_controller_id: sw102
+    name: "konyha_kozep"
+    register_type: coil
+    address: 4
+  - platform: modbus_controller
+    modbus_controller_id: sw102
+    name: "halo_jobb"
+    register_type: coil
+    address: 5
+  - platform: modbus_controller
+    modbus_controller_id: sw102
+    name: "furdo2_pult"
+    register_type: coil
+    address: 6
+  - platform: modbus_controller
+    modbus_controller_id: sw102
+    name: "kozlekedo2"
+    register_type: coil
+    address: 7
+
+# -----------------------------------------------------------------------------
+# SENSORS
+# -----------------------------------------------------------------------------
+
+sensor:
+
+  - platform: wifi_signal
+    name: "WiFi Signal"
+    update_interval: 30s
+
+  - platform: uptime
+    name: "Uptime"
+    unit_of_measurement: h
+    filters:
+      - lambda: return int((x + 1800.0) / 3600.0);
